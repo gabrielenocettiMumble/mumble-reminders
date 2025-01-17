@@ -57,8 +57,8 @@ void main() {
 
         expect(reminder.date.hour, scheduleDate.hour);
         expect(reminder.date.minute, scheduleDate.minute);
-        expect(reminder.title, 'Daily Reminder');
-        expect(reminder.body, 'This is a daily reminder');
+        expect(reminder.content.title, 'Daily Reminder');
+        expect(reminder.content.body, 'This is a daily reminder');
       }
       // check if the reminders are not scheduled for the last day + 1
 
@@ -100,8 +100,8 @@ void main() {
             currentDate.add(Duration(days: dayDifference)).day);
         expect(reminder.date.hour, scheduleDate.hour);
         expect(reminder.date.minute, scheduleDate.minute);
-        expect(reminder.title, 'Daily Reminder');
-        expect(reminder.body, 'This is a daily reminder');
+        expect(reminder.content.title, 'Daily Reminder');
+        expect(reminder.content.body, 'This is a daily reminder');
       }
       // check if the reminders are not scheduled for the last day + 2
 
@@ -145,8 +145,8 @@ void main() {
             currentDate.add(Duration(days: weekDifference * 7)).day);
         expect(reminder.date.toUtc().hour, scheduleDate.toUtc().hour);
         expect(reminder.date.toUtc().minute, scheduleDate.toUtc().minute);
-        expect(reminder.title, 'Weekly Reminder');
-        expect(reminder.body, 'This is a weekly reminder');
+        expect(reminder.content.title, 'Weekly Reminder');
+        expect(reminder.content.body, 'This is a weekly reminder');
       }
       // check if the reminders are not scheduled for the last week + 1
 
@@ -190,8 +190,8 @@ void main() {
             scheduleDate.add(Duration(days: weekDifference * 7)).day);
         expect(reminder.date.toUtc().hour, scheduleDate.toUtc().hour);
         expect(reminder.date.toUtc().minute, scheduleDate.toUtc().minute);
-        expect(reminder.title, 'Weekly Reminder');
-        expect(reminder.body, 'This is a weekly reminder');
+        expect(reminder.content.title, 'Weekly Reminder');
+        expect(reminder.content.body, 'This is a weekly reminder');
       }
       // check if the reminders are not scheduled for the last week + 2
 
@@ -249,8 +249,8 @@ void main() {
                 .month);
         expect(reminder.date.hour, scheduleDate.hour);
         expect(reminder.date.minute, scheduleDate.minute);
-        expect(reminder.title, 'Monthly Reminder');
-        expect(reminder.body, 'This is a monthly reminder');
+        expect(reminder.content.title, 'Monthly Reminder');
+        expect(reminder.content.body, 'This is a monthly reminder');
       }
 
       result.sort((a, b) => a.date.compareTo(b.date));
@@ -295,8 +295,8 @@ void main() {
                 .month);
         expect(reminder.date.hour, scheduleDate.hour);
         expect(reminder.date.minute, scheduleDate.minute);
-        expect(reminder.title, 'Monthly Reminder');
-        expect(reminder.body, 'This is a monthly reminder');
+        expect(reminder.content.title, 'Monthly Reminder');
+        expect(reminder.content.body, 'This is a monthly reminder');
       }
 
       result.sort((a, b) => a.date.compareTo(b.date));
@@ -343,8 +343,8 @@ void main() {
 
         expect(reminder.date.hour, scheduleDate.hour);
         expect(reminder.date.minute, scheduleDate.minute);
-        expect(reminder.title, 'Monthly Reminder');
-        expect(reminder.body, 'This is a monthly reminder');
+        expect(reminder.content.title, 'Monthly Reminder');
+        expect(reminder.content.body, 'This is a monthly reminder');
       }
 
       result.sort((a, b) => a.date.compareTo(b.date));
@@ -395,8 +395,8 @@ void main() {
         }
         expect(reminder.date.hour, scheduleDate.hour);
         expect(reminder.date.minute, scheduleDate.minute);
-        expect(reminder.title, 'Every Three Months Reminder');
-        expect(reminder.body, 'This is a reminder every three months');
+        expect(reminder.content.title, 'Every Three Months Reminder');
+        expect(reminder.content.body, 'This is a reminder every three months');
       }
 
       result.sort((a, b) => a.date.compareTo(b.date));
@@ -443,8 +443,8 @@ void main() {
                 .month);
         expect(reminder.date.hour, scheduleDate.hour);
         expect(reminder.date.minute, scheduleDate.minute);
-        expect(reminder.title, 'Every Three Months Reminder');
-        expect(reminder.body, 'This is a reminder every three months');
+        expect(reminder.content.title, 'Every Three Months Reminder');
+        expect(reminder.content.body, 'This is a reminder every three months');
       }
 
       result.sort((a, b) => a.date.compareTo(b.date));
@@ -492,8 +492,8 @@ void main() {
 
         expect(reminder.date.hour, scheduleDate.hour);
         expect(reminder.date.minute, scheduleDate.minute);
-        expect(reminder.title, 'Every Three Months Reminder');
-        expect(reminder.body, 'This is a reminder every three months');
+        expect(reminder.content.title, 'Every Three Months Reminder');
+        expect(reminder.content.body, 'This is a reminder every three months');
       }
 
       result.sort((a, b) => a.date.compareTo(b.date));

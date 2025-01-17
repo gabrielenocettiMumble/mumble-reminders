@@ -1,7 +1,7 @@
 import 'package:va_reminders/model/reminder_settings/reminder_content.dart';
 import 'package:va_reminders/model/reminder_settings/reminder_time/reminder_frequency.dart';
 import 'package:va_reminders/model/reminder_settings/reminder_time/reminder_time.dart';
-//TODO think about how to separate the manager to the defined things on the app
+
 class Reminder {
   String id;
   Set<ReminderFrequency> frequencies;

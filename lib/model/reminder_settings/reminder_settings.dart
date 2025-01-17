@@ -1,5 +1,7 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:va_reminders/model/reminder_settings/reminder_time/reminder_time.dart';
+
 import 'reminder_content.dart';
 
 class ReminderSettings {
@@ -24,4 +26,14 @@ class ReminderSettings {
   Map<String, dynamic> toDbMap() => {...time.toDbMap(), ...content.toDbMap()};
 
   String getDescription(BuildContext context) => time.getDescription(context);
+
+  ReminderSettings copyWith({
+    ReminderTime? time,
+    ReminderContent? content,
+  }) {
+    return ReminderSettings(
+      time: time ?? this.time,
+      content: content ?? this.content,
+    );
+  }
 }
