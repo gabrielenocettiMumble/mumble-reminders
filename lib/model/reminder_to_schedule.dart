@@ -1,4 +1,4 @@
-import 'package:va_reminders/model/reminder_settings/reminder_content.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_content.dart';
 
 class ReminderToSchedule {
   final String reminderId;

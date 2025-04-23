@@ -1,6 +1,6 @@
-import 'package:va_reminders/model/reminder_settings/reminder_content.dart';
-import 'package:va_reminders/model/reminder_settings/reminder_time/reminder_frequency.dart';
-import 'package:va_reminders/model/reminder_settings/reminder_time/reminder_time.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_content.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_time/reminder_frequency.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_time/reminder_time.dart';
 
 class Reminder {
   String id;

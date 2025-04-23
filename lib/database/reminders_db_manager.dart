@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:va_reminders/database/reminders_db.dart';
-import 'package:va_reminders/model/reminder_settings/reminder_settings.dart';
+import 'package:mumble_reminders/database/reminders_db.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_settings.dart';
 
 class RemindersDbManager {
   static String get _tableName => 'reminders';

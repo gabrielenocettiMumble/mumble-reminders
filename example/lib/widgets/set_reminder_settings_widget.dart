@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:va_reminders/model/reminder_settings/reminder_content.dart';
-import 'package:va_reminders/model/reminder_settings/reminder_settings.dart';
-import 'package:va_reminders/model/reminder_settings/reminder_time/types/daily_reminder_time.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_content.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_settings.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_time/types/daily_reminder_time.dart';
 
 class SetReminderSettingsWidget extends StatefulWidget {
   const SetReminderSettingsWidget(

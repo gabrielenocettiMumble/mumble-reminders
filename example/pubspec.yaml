@@ -11,7 +11,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  va_reminders:
+  mumble_reminders:
     path: ../
   timezone: ^0.10.0
 

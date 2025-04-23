@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:va_reminders/database/reminders_db_manager.dart';
-import 'package:va_reminders/model/reminder_manager_options.dart';
-import 'package:va_reminders/model/reminder_settings/reminder_settings.dart';
-import 'package:va_reminders/model/reminder_to_schedule.dart';
-import 'package:va_reminders/utilities/local_notification_utility.dart';
-import 'package:va_reminders/utilities/reminders_scheduler.dart';
+import 'package:mumble_reminders/database/reminders_db_manager.dart';
+import 'package:mumble_reminders/model/reminder_manager_options.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_settings.dart';
+import 'package:mumble_reminders/model/reminder_to_schedule.dart';
+import 'package:mumble_reminders/utilities/local_notification_utility.dart';
+import 'package:mumble_reminders/utilities/reminders_scheduler.dart';
 
 //TODO READ IT, the objective of this package is to avoid the dependency of flutterLocalNotification and the db access from the app
 // all the others features like navigation callback are app side

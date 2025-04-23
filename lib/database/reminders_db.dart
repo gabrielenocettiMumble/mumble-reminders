@@ -1,13 +1,13 @@
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:va_reminders/database/reminders_db_manager.dart';
+import 'package:mumble_reminders/database/reminders_db_manager.dart';
 import 'package:path/path.dart';
 
 class RemindersDB {
   RemindersDB._privateConstructor();
   static final RemindersDB instance = RemindersDB._privateConstructor();
 
-  static const _dbName = 'va_reminders.db';
+  static const _dbName = 'mumble_reminders.db';
   static const _dbVersion = 1;
 
   static Database? _db;

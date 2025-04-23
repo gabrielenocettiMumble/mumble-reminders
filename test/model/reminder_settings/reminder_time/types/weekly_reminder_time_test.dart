@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:va_reminders/model/reminder_settings/reminder_time/reminder_frequency.dart';
-import 'package:va_reminders/model/reminder_settings/reminder_time/types/weekly_reminder_time.dart';
-import 'package:va_reminders/utilities/time_utiils.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_time/reminder_frequency.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_time/types/weekly_reminder_time.dart';
+import 'package:mumble_reminders/utilities/time_utiils.dart';
 
 void main() {
   group('WeeklyReminderTime', () {

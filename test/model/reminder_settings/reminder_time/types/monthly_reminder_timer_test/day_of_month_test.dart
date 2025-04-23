@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:va_reminders/model/reminder_settings/reminder_time/types/monthly_reminder_time/day_of_month.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_time/types/monthly_reminder_time/day_of_month.dart';
 
 void main() {
   group('LastDayOfMonth', () {

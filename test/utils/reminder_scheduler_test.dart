@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:va_reminders/model/reminder_settings/reminder_content.dart';
-import 'package:va_reminders/model/reminder_settings/reminder_settings.dart';
-import 'package:va_reminders/model/reminder_settings/reminder_time/reminder_frequency.dart';
-import 'package:va_reminders/model/reminder_settings/reminder_time/types/daily_reminder_time.dart';
-import 'package:va_reminders/model/reminder_settings/reminder_time/types/monthly_reminder_time/day_of_month.dart';
-import 'package:va_reminders/model/reminder_settings/reminder_time/types/monthly_reminder_time/monthly_reminder_time.dart';
-import 'package:va_reminders/model/reminder_settings/reminder_time/types/weekly_reminder_time.dart';
-import 'package:va_reminders/model/reminder_to_schedule.dart';
-import 'package:va_reminders/utilities/reminders_scheduler.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_content.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_settings.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_time/reminder_frequency.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_time/types/daily_reminder_time.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_time/types/monthly_reminder_time/day_of_month.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_time/types/monthly_reminder_time/monthly_reminder_time.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_time/types/weekly_reminder_time.dart';
+import 'package:mumble_reminders/model/reminder_to_schedule.dart';
+import 'package:mumble_reminders/utilities/reminders_scheduler.dart';
 
 void main() {
   int getDaysLenghtOfMonth(int month, int year) {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:va_reminders/model/reminder_settings/reminder_time/reminder_frequency.dart';
-import 'package:va_reminders/model/reminder_settings/reminder_time/reminder_time.dart';
-import 'package:va_reminders/model/reminder_settings/reminder_time/types/monthly_reminder_time/day_of_month.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_time/reminder_frequency.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_time/reminder_time.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_time/types/monthly_reminder_time/day_of_month.dart';
 
 class MonthlyReminderTime extends ReminderTime {
   final DayOfMonth dayOfMonth;

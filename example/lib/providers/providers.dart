@@ -1,5 +1,5 @@
-import 'package:va_reminders/manager/reminders_manager.dart';
-import 'package:va_reminders/model/reminder_manager_options.dart';
+import 'package:mumble_reminders/manager/reminders_manager.dart';
+import 'package:mumble_reminders/model/reminder_manager_options.dart';
 
 class Providers {
   static RemindersManager remindersManager = RemindersManager(

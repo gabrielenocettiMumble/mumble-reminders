@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:va_reminders/database/reminders_db_manager.dart';
-import 'package:va_reminders/model/reminder_manager_options.dart';
-import 'package:va_reminders/model/reminder_to_schedule.dart';
-import 'package:va_reminders/utilities/reminders_scheduler.dart';
-import 'package:va_reminders/utilities/reminders_shared_prefrences_utility.dart';
+import 'package:mumble_reminders/database/reminders_db_manager.dart';
+import 'package:mumble_reminders/model/reminder_manager_options.dart';
+import 'package:mumble_reminders/model/reminder_to_schedule.dart';
+import 'package:mumble_reminders/utilities/reminders_scheduler.dart';
+import 'package:mumble_reminders/utilities/reminders_shared_prefrences_utility.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 
@@ -55,7 +55,7 @@ class LocalNotificationUtility {
   }
 
   /// throws [NotificationPermissionDeniedException] if the user denies the permission
-  /// 
+  ///
   /// throws [ScheduleExactAlarmPermissionDeniedException] if the user denies the permission to schedule exact alarms (Android only)
   static Future<bool> askPermissions() async {
     if (Platform.isAndroid) {

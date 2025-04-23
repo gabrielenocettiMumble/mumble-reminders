@@ -1,7 +1,7 @@
 import 'package:example/providers/providers.dart';
 import 'package:example/widgets/set_reminder_settings_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:va_reminders/model/reminder_settings/reminder_settings.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_settings.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
