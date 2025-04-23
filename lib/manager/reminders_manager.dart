@@ -2,10 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:mumble_reminders/database/reminders_db_manager.dart';
 import 'package:mumble_reminders/model/reminder_manager_options.dart';
+import 'package:mumble_reminders/model/reminder_settings/reminder_content.dart';
 import 'package:mumble_reminders/model/reminder_settings/reminder_settings.dart';
 import 'package:mumble_reminders/model/reminder_to_schedule.dart';
 import 'package:mumble_reminders/utilities/local_notification_utility.dart';
 import 'package:mumble_reminders/utilities/reminders_scheduler.dart';
+
+typedef ReminderContentForIndex = ReminderContent Function(int index);
 
 //TODO READ IT, the objective of this package is to avoid the dependency of flutterLocalNotification and the db access from the app
 // all the others features like navigation callback are app side
@@ -20,14 +23,17 @@ class RemindersManager extends ChangeNotifier {
   Function(String payload)? navigationCallback;
 
   RemindersManager({required this.options, this.navigationCallback}) {
-    _loadReminderSettings();
-    initializePlugin();
+    _loadReminderSettings().then((_) {
+      initializePlugin();
+    });
   }
 
   Future<void> initializePlugin() async {
     _plugin = await LocalNotificationUtility.notificationsPlugin(
         openNotification: _openNotification,
         defaultDrawableIcon: options.androidOptions.defaultDrawableIcon);
+
+    _updateScheduledReminders();
   }
 
   void _openNotification(String? payload) {
@@ -47,19 +53,19 @@ class RemindersManager extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> updateReminderSettings(
-      String id, ReminderSettings settings) async {
+  Future<void> updateReminderSettings(String id, ReminderSettings settings,
+      {ReminderContentForIndex? contentForIndex}) async {
     _reminderSettings[id] = settings;
     notifyListeners();
     await RemindersDbManager.setSettingsForReminderID(id, settings);
-    await _updateScheduledReminders();
+    await _updateScheduledReminders(id: id, cForIndex: contentForIndex);
   }
 
   Future<void> removeReminderSettings(String id) async {
     _reminderSettings.remove(id);
     notifyListeners();
     await RemindersDbManager.removeSettingsForReminderID(id);
-    await _updateScheduledReminders();
+    await _updateScheduledReminders(id: id);
   }
 
   Future<void> clearAllReminderSettings() async {
@@ -70,7 +76,9 @@ class RemindersManager extends ChangeNotifier {
 
   ReminderSettings? getReminderSettings(String id) => _reminderSettings[id];
 
-  Future<void> _updateScheduledReminders() async {
+  Future<void> _updateScheduledReminders(
+      {String? id, ReminderContentForIndex? cForIndex}) async {
+    if (_reminderSettings.isEmpty) return;
     bool permission = false;
     try {
       permission = await LocalNotificationUtility.askPermissions();
@@ -81,11 +89,15 @@ class RemindersManager extends ChangeNotifier {
 
     List<ReminderToSchedule> reminders = [];
 
+    await _plugin?.cancelAll();
+
     for (String reminderId in _reminderSettings.keys) {
       reminders.addAll(
         RemindersScheduler.generateScheduling(
           reminderId,
-          settings: _reminderSettings[reminderId]!,
+          settings: _reminderSettings[reminderId],
+          // use the id and cForIndex to schedule the reminder with different content if needed
+          contentForIndex: id == reminderId ? cForIndex : null,
         ),
       );
     }

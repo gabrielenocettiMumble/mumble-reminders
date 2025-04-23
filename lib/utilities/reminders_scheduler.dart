@@ -1,3 +1,4 @@
+import 'package:mumble_reminders/manager/reminders_manager.dart';
 import 'package:mumble_reminders/model/reminder_settings/reminder_content.dart';
 import 'package:mumble_reminders/model/reminder_settings/reminder_settings.dart';
 import 'package:mumble_reminders/model/reminder_settings/reminder_time/reminder_frequency.dart';
@@ -12,18 +13,21 @@ class RemindersScheduler {
     String reminderId, {
     int limit = 64,
     required ReminderSettings? settings,
+    ReminderContentForIndex? contentForIndex,
   }) {
     if (settings != null) {
       List<DateTime> dates = _generateDates(settings, limit);
       return [
-        for (var date in dates)
+        for (int i = 0; i < dates.length; i++)
           ReminderToSchedule(
             reminderId: reminderId,
-            date: date,
-            content: ReminderContent(
-              title: settings.content.title,
-              body: settings.content.body,
-            ),
+            date: dates[i],
+            content: contentForIndex != null
+                ? contentForIndex(i)
+                : ReminderContent(
+                    title: settings.content.title,
+                    body: settings.content.body,
+                  ),
           )
       ];
     }

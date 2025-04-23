@@ -16,11 +16,47 @@ void main() {
   }
 
   group('RemindersScheduler', () {
+    test('generateScheduling with contentForIndex parameter', () async {
+      const reminderId = 'test';
+      final currentDate = DateTime.now();
+      final scheduleDate = currentDate.add(const Duration(minutes: 5));
+      
+      final settings = ReminderSettings(
+        time: DailyReminderTime(
+          timeOfTheDay: TimeOfDay.fromDateTime(scheduleDate),
+        ),
+        content: const ReminderContent(
+            title: 'Default Reminder', body: 'This is a default reminder'),
+      );
+
+      ReminderContent contentForIndex(int index) {
+        return ReminderContent(
+          title: 'Custom Reminder $index',
+          body: 'This is a custom reminder for index $index',
+        );
+      }
+
+      int limit = 10;
+      final result = RemindersScheduler.generateScheduling(
+        reminderId,
+        settings: settings,
+        limit: limit,
+        contentForIndex: contentForIndex,
+      );
+
+      expect(result.length, limit);
+
+      for (int i = 0; i < result.length; i++) {
+        expect(result[i].content.title, 'Custom Reminder $i');
+        expect(result[i].content.body, 'This is a custom reminder for index $i');
+      }
+    });
     test('generateScheduling with no settings', () async {
       const reminderId = 'test';
       final result = RemindersScheduler.generateScheduling(
         reminderId,
         settings: null,
+        contentForIndex: (_) => const ReminderContent(title: 'Test', body: 'Test'),
       );
 
       expect(result.length, 0);
