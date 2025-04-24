@@ -9,11 +9,7 @@ import 'package:mumble_reminders/utilities/reminders_scheduler.dart';
 
 typedef ReminderContentForIndex = ReminderContent Function(int index);
 
-//TODO READ IT, the objective of this package is to avoid the dependency of flutterLocalNotification and the db access from the app
-// all the others features like navigation callback are app side
-
-//TODO turn this into an abstract class in order to "build" on top of it a provider
-class RemindersManager extends ChangeNotifier {
+abstract class RemindersManager extends ChangeNotifier {
   final ReminderManagerOptions options;
 
   late final NotificationPlugin _plugin = NotificationPlugin(
