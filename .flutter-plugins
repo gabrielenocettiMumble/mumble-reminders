@@ -1,17 +1,18 @@
 # This is a generated file; do not edit or check into version control.
-flutter_local_notifications=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/flutter_local_notifications-18.0.1/
-flutter_local_notifications_linux=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/flutter_local_notifications_linux-5.0.0/
+flutter_local_notifications=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/flutter_local_notifications-19.1.0/
+flutter_local_notifications_linux=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/flutter_local_notifications_linux-6.0.0/
+flutter_local_notifications_windows=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/flutter_local_notifications_windows-1.0.0/
 path_provider=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/path_provider-2.1.5/
-path_provider_android=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/path_provider_android-2.2.14/
-path_provider_foundation=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/path_provider_foundation-2.4.0/
+path_provider_android=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/path_provider_android-2.2.15/
+path_provider_foundation=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/path_provider_foundation-2.4.1/
 path_provider_linux=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/path_provider_linux-2.2.1/
 path_provider_windows=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/path_provider_windows-2.3.0/
-shared_preferences=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/shared_preferences-2.3.3/
-shared_preferences_android=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/shared_preferences_android-2.3.4/
-shared_preferences_foundation=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/shared_preferences_foundation-2.5.3/
+shared_preferences=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/shared_preferences-2.5.3/
+shared_preferences_android=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/shared_preferences_android-2.4.7/
+shared_preferences_foundation=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/shared_preferences_foundation-2.5.4/
 shared_preferences_linux=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/shared_preferences_linux-2.4.1/
-shared_preferences_web=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/shared_preferences_web-2.4.2/
+shared_preferences_web=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/shared_preferences_web-2.4.3/
 shared_preferences_windows=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/shared_preferences_windows-2.4.1/
 sqflite=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/sqflite-2.4.1/
 sqflite_android=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/sqflite_android-2.4.0/
-sqflite_darwin=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/sqflite_darwin-2.4.1/
+sqflite_darwin=/Users/gabrielenocetti/.pub-cache/hosted/pub.dev/sqflite_darwin-2.4.1+1/

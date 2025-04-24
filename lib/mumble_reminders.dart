@@ -1,1 +1,1 @@
-library mumble_reminders;
+library;

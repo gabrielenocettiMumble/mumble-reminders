@@ -141,8 +141,6 @@ class NotificationPlugin {
       reminderDescription,
       tz.TZDateTime.from(reminder.date, tz.local),
       platformChannelSpecifics,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
       androidScheduleMode: options.androidOptions.useExactAlarm
           ? AndroidScheduleMode.exactAllowWhileIdle
           : AndroidScheduleMode.inexactAllowWhileIdle,
