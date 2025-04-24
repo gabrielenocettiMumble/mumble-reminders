@@ -6,7 +6,8 @@ class Providers {
     options: ReminderManagerOptions(
       androidOptions: AndroidReminderManagerOptions(
         androidChannelId: 'example_channel_id',
-        androidChannelName: 'example_channel_name',
+        androidChannelName: 'Example Reminders',
+        androidChannelDescription: 'Channel for example reminder notifications',
         defaultDrawableIcon: '@mipmap/ic_launcher',
       ),
     ),

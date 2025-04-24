@@ -1,5 +1,5 @@
-name: example
-description: "A new Flutter project."
+name: mumble_reminders_example
+description: "Mumble Reminders Example App"
 
 publish_to: "none"
 
@@ -14,7 +14,8 @@ dependencies:
   mumble_reminders:
     path: ../
   timezone: ^0.10.0
-
+  uuid: ^4.3.3
+  
   cupertino_icons: ^1.0.8
 
 dev_dependencies:

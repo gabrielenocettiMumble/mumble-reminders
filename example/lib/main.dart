@@ -1,7 +1,13 @@
-import 'package:example/screens/home.dart';
 import 'package:flutter/material.dart';
+import 'package:mumble_reminders_example/providers/providers.dart';
+import 'package:mumble_reminders_example/screens/home.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize the reminders manager
+  await Providers.remindersManager.initializePlugin();
+
   runApp(const MyApp());
 }
 
@@ -11,9 +17,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Mumble Reminders',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color.fromRGBO(245, 130, 104, 1)),
         useMaterial3: true,
       ),
       home: const HomePage(),
