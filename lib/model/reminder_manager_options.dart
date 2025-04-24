@@ -19,12 +19,14 @@ class AndroidReminderManagerOptions {
   final String androidChannelName;
   final String? androidChannelDescription;
   final String defaultDrawableIcon;
+  final bool useExactAlarm;
 
   AndroidReminderManagerOptions({
     required this.androidChannelId,
     required this.androidChannelName,
     this.androidChannelDescription,
     required this.defaultDrawableIcon,
+    this.useExactAlarm = false,
   });
 
   AndroidReminderManagerOptions copyWith({
@@ -32,6 +34,7 @@ class AndroidReminderManagerOptions {
     String? androidChannelName,
     String? androidChannelDescription,
     String? defaultDrawableIcon,
+    bool? useExactAlarm,
   }) {
     return AndroidReminderManagerOptions(
       androidChannelId: androidChannelId ?? this.androidChannelId,
@@ -39,6 +42,7 @@ class AndroidReminderManagerOptions {
       androidChannelDescription:
           androidChannelDescription ?? this.androidChannelDescription,
       defaultDrawableIcon: defaultDrawableIcon ?? this.defaultDrawableIcon,
+      useExactAlarm: useExactAlarm ?? this.useExactAlarm,
     );
   }
 }

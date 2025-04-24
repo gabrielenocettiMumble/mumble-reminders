@@ -49,7 +49,7 @@ class NotificationPlugin {
   /// throws [NotificationPermissionDeniedException] if the user denies the permission
   ///
   /// throws [ScheduleExactAlarmPermissionDeniedException] if the user denies the permission to schedule exact alarms (Android only)
-  Future<bool> askPermissions() async {
+  Future<bool> askPermissions(bool useExactAlarm) async {
     if (Platform.isAndroid) {
       final androidPlugin = FlutterLocalNotificationsPlugin()
           .resolvePlatformSpecificImplementation<
@@ -58,9 +58,11 @@ class NotificationPlugin {
       bool permission =
           await androidPlugin.requestNotificationsPermission() ?? false;
       if (!permission) throw NotificationPermissionDeniedException();
+
       bool exactAlarmPermission = true;
-      if (await androidPlugin.canScheduleExactNotifications() != true) {
-        //TODO add chance to set or disable the exact alarm permission
+
+      if (useExactAlarm &&
+          await androidPlugin.canScheduleExactNotifications() != true) {
         exactAlarmPermission =
             await androidPlugin.requestExactAlarmsPermission() ?? false;
         if (!exactAlarmPermission) {
@@ -70,7 +72,7 @@ class NotificationPlugin {
 
       await RemindersSharedPrefrencesUtility.setNotificationPermissionAsked();
 
-      return permission && exactAlarmPermission;
+      return permission && (useExactAlarm ? exactAlarmPermission : true);
     } else {
       bool permission = await FlutterLocalNotificationsPlugin()
               .resolvePlatformSpecificImplementation<
@@ -137,7 +139,9 @@ class NotificationPlugin {
       platformChannelSpecifics,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: options.androidOptions.useExactAlarm
+          ? AndroidScheduleMode.exactAllowWhileIdle
+          : AndroidScheduleMode.inexactAllowWhileIdle,
       payload: json.encode(notificationPayload),
     );
   }

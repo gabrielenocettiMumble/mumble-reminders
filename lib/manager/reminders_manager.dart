@@ -81,7 +81,7 @@ abstract class RemindersManager extends ChangeNotifier {
       {String? id, ReminderContentForIndex? cForIndex}) async {
     if (_reminderSettings.isEmpty) return;
     try {
-      await _plugin.askPermissions();
+      await _plugin.askPermissions(options.androidOptions.useExactAlarm);
     } on NotificationPermissionException {
       rethrow;
     }

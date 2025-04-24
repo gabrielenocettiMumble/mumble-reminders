@@ -11,6 +11,7 @@ class ReminderProvider extends RemindersManager {
               androidChannelId: 'example_channel_id',
               androidChannelName: 'example_channel_name',
               defaultDrawableIcon: '@mipmap/ic_launcher',
+              useExactAlarm: true,
             ),
           ),
           navigationCallback: (payload) {
