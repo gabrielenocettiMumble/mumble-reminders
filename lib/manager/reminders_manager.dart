@@ -53,6 +53,7 @@ abstract class RemindersManager extends ChangeNotifier {
   Future<void> updateReminderSettings(String id, ReminderSettings settings,
       {ReminderContentForIndex? contentForIndex}) async {
     //TODO find a way to avoid cancelling all the notifications with different content for index every time _updateScheduledReminders is called
+    // for now contentForIndex is null because the custom content are removed when _updateScheduledReminders is called
     contentForIndex = null;
     _reminderSettings[id] = settings;
     notifyListeners();
