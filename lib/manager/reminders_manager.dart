@@ -39,8 +39,7 @@ abstract class RemindersManager extends ChangeNotifier {
 
   final Map<String, ReminderSettings?> _reminderSettings = {};
 
-  Map<String, ReminderSettings?> get reminderSettings =>
-      _reminderSettings;
+  Map<String, ReminderSettings?> get reminderSettings => _reminderSettings;
 
   Future<void> _loadReminderSettings() async {
     List<String> ids = await RemindersDbManager.getIds();
@@ -62,6 +61,7 @@ abstract class RemindersManager extends ChangeNotifier {
       await _updateScheduledReminders(id: id, cForIndex: contentForIndex);
     } on NotificationPermissionException {
       await removeReminderSettings(id);
+      rethrow;
     }
   }
 

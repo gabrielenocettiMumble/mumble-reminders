@@ -227,12 +227,6 @@ class _SetReminderSettingsWidgetState extends State<SetReminderSettingsWidget> {
                     onPressed: _isFormValid.value
                         ? () {
                             widget.onReminderSettingsChanged(settings!);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Reminder saved successfully'),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
                           }
                         : null,
                     icon: const Icon(Icons.save),

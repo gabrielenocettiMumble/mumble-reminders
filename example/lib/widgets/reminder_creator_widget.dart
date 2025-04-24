@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mumble_reminders/manager/notification_plugin.dart';
 import 'package:mumble_reminders_example/providers/providers.dart';
 import 'package:mumble_reminders_example/widgets/set_reminder_settings_widget.dart';
 import 'package:uuid/uuid.dart';
@@ -99,13 +100,40 @@ class _ReminderCreatorWidgetState extends State<ReminderCreatorWidget> {
             // Reminder settings widget
             SetReminderSettingsWidget(
               reminderSettings: null,
-              onReminderSettingsChanged: (settings) {
+              onReminderSettingsChanged: (settings) async {
                 final reminderId = _reminderIdController.text;
-                Providers.remindersManager.updateReminderSettings(
-                  reminderId,
-                  settings,
-                );
-
+                try {
+                  await Providers.remindersManager.updateReminderSettings(
+                    reminderId,
+                    settings,
+                  );
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Reminder saved successfully'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                } on NotificationPermissionDeniedException {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Permission denied'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                } on ScheduleExactAlarmPermissionDeniedException {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Exact alarm permission denied'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
                 // Generate a new ID for the next reminder
                 if (!_useCustomId) {
                   _generateRandomId();
