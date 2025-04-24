@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:mumble_reminders/manager/reminders_manager.dart';
 import 'package:mumble_reminders/model/reminder_settings/reminder_content.dart';
 import 'package:mumble_reminders/model/reminder_settings/reminder_settings.dart';
@@ -63,14 +64,14 @@ class RemindersScheduler {
 
   static List<DateTime> _generateDailyDates(
       DailyReminderTime settings, int limit) {
-    DateTime startDate = _getStartDate(DateTime.now(),
+    DateTime startDate = _getStartDate(clock.now(),
         settings.timeOfTheDay.hour, settings.timeOfTheDay.minute);
     return List.generate(limit, (i) => startDate.add(Duration(days: i)));
   }
 
   static List<DateTime> _generateWeeklyDates(
       WeeklyReminderTime settings, int limit) {
-    DateTime startDate = _getStartDate(DateTime.now(),
+    DateTime startDate = _getStartDate(clock.now(),
         settings.timeOfTheDay.hour, settings.timeOfTheDay.minute);
     while ((startDate.weekday - 1) != settings.dayOfWeek) {
       startDate = startDate.add(const Duration(days: 1));
@@ -82,7 +83,7 @@ class RemindersScheduler {
   static List<DateTime> _generateMonthlyDates(
       MonthlyReminderTime settings, int limit,
       {int monthIncrement = 1}) {
-    DateTime now = DateTime.now();
+    DateTime now = clock.now();
 
     // Generate the start date (it sets the time of the day)
     DateTime startDate = _getStartDate(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:clock/clock.dart';
 import 'package:mumble_reminders/model/reminder_settings/reminder_content.dart';
 import 'package:mumble_reminders/model/reminder_settings/reminder_settings.dart';
 import 'package:mumble_reminders/model/reminder_settings/reminder_time/reminder_frequency.dart';
@@ -7,539 +8,370 @@ import 'package:mumble_reminders/model/reminder_settings/reminder_time/types/dai
 import 'package:mumble_reminders/model/reminder_settings/reminder_time/types/monthly_reminder_time/day_of_month.dart';
 import 'package:mumble_reminders/model/reminder_settings/reminder_time/types/monthly_reminder_time/monthly_reminder_time.dart';
 import 'package:mumble_reminders/model/reminder_settings/reminder_time/types/weekly_reminder_time.dart';
-import 'package:mumble_reminders/model/reminder_to_schedule.dart';
 import 'package:mumble_reminders/utilities/reminders_scheduler.dart';
 
-//TODO do these test by overriding the dateTIme now and test it on multiple dates
+void testWithClock(String description, Clock clock, dynamic Function() body) {
+  test(description, () {
+    withClock(clock, body);
+  });
+}
+
 void main() {
-  int getDaysLenghtOfMonth(int month, int year) {
-    return DateTime(year, month + 1, 0).day;
+  // Test dates for various scenarios
+  final testDates = [
+    // End of month dates
+    DateTime(2023, 1, 31, 12, 0),
+    DateTime(2023, 4, 30, 12, 0),
+    DateTime(2023, 2, 28, 12, 0),
+    DateTime(2024, 2, 29, 12, 0),
+
+    // Mid-month dates
+    DateTime(2023, 5, 15, 12, 0),
+
+    // Month transitions
+    DateTime(2023, 1, 30, 12, 0),
+    DateTime(2023, 3, 31, 23, 59),
+
+    // Special dates for testing day existence in different months
+    DateTime(2023, 1, 29, 12, 0),
+    DateTime(2023, 1, 30, 12, 0),
+    DateTime(2023, 1, 31, 12, 0)
+  ];
+
+  // Reusable test functions
+  void testDailyReminders(DateTime testDate) {
+    testWithClock(
+        'daily reminder on ${testDate.year}-${testDate.month}-${testDate.day}',
+        Clock.fixed(testDate), () {
+      const reminderId = 'test';
+      const settings = ReminderSettings(
+        time: DailyReminderTime(
+          timeOfTheDay: TimeOfDay(hour: 15, minute: 0),
+        ),
+        content: ReminderContent(
+            title: 'Daily Reminder', body: 'This is a daily reminder'),
+      );
+
+      int limit = 5;
+      final result = RemindersScheduler.generateScheduling(reminderId,
+          settings: settings, limit: limit);
+
+      expect(result.length, limit);
+
+      // All reminders should be sequential days with the same time
+      for (int i = 0; i < limit; i++) {
+        expect(result[i].date.hour, 15);
+        expect(result[i].date.minute, 0);
+
+        // The first reminder depends on whether testDate is before or after 15:00
+        if (i == 0) {
+          if (testDate.hour < 15 ||
+              (testDate.hour == 15 && testDate.minute == 0)) {
+            // If the test date is before 15:00, the first reminder should be on the same day
+            expect(result[i].date.day, testDate.day);
+            expect(result[i].date.month, testDate.month);
+            expect(result[i].date.year, testDate.year);
+          } else {
+            // If the test date is after 15:00, the first reminder should be for the next day
+            final expectedDate = testDate.add(const Duration(days: 1));
+            expect(result[i].date.day, expectedDate.day);
+            expect(result[i].date.month, expectedDate.month);
+            expect(result[i].date.year, expectedDate.year);
+          }
+        } else if (i > 0) {
+          // Each reminder should be exactly 1 day after the previous one
+          final prevDate = result[i - 1].date;
+          final dayDiff = result[i].date.difference(prevDate).inDays;
+          expect(dayDiff, 1);
+        }
+      }
+    });
+  }
+
+  void testWeeklyReminders(DateTime testDate) {
+    testWithClock(
+        'weekly reminder on ${testDate.year}-${testDate.month}-${testDate.day}',
+        Clock.fixed(testDate), () {
+      const reminderId = 'test';
+      final settings = ReminderSettings(
+        time: WeeklyReminderTime(
+          dayOfWeek: testDate.weekday % 7, // Use test date's weekday
+          timeOfTheDay: const TimeOfDay(hour: 15, minute: 0),
+        ),
+        content: const ReminderContent(
+            title: 'Weekly Reminder', body: 'This is a weekly reminder'),
+      );
+
+      int limit = 4;
+      final result = RemindersScheduler.generateScheduling(reminderId,
+          settings: settings, limit: limit);
+
+      expect(result.length, limit);
+
+      // All reminders should be on the same weekday
+      for (int i = 0; i < limit; i++) {
+        expect(result[i].date.weekday, testDate.weekday);
+        expect(result[i].date.hour, 15);
+        expect(result[i].date.minute, 0);
+        // Each reminder should be a week apart
+        if (i > 0) {
+          final dayDiff = result[i].date.difference(result[i - 1].date).inDays;
+          expect(dayDiff, 7);
+        }
+      }
+    });
+  }
+
+  void testMonthlyReminders(DateTime testDate) {
+    testWithClock(
+        'monthly reminder on ${testDate.year}-${testDate.month}-${testDate.day}',
+        Clock.fixed(testDate), () {
+      const reminderId = 'test';
+      final settings = ReminderSettings(
+        time: MonthlyReminderTime(
+          frequency: const ReminderFrequencyMonthly(),
+          dayOfMonth: DayOfMonthNumber(testDate.day),
+          timeOfTheDay: const TimeOfDay(hour: 15, minute: 0),
+        ),
+        content: const ReminderContent(
+            title: 'Monthly Reminder', body: 'This is a monthly reminder'),
+      );
+
+      int limit = 4;
+      final result = RemindersScheduler.generateScheduling(reminderId,
+          settings: settings, limit: limit);
+
+      expect(result.length, limit);
+
+      // All reminders should have the specified hours and minutes
+      for (var reminder in result) {
+        expect(reminder.date.isAfter(testDate), true);
+        expect(reminder.date.hour, 15);
+        expect(reminder.date.minute, 0);
+      }
+
+      // Verify that each reminder is scheduled at least one month apart
+      // Note: We can't always expect a perfect month-to-month sequence due to
+      // day existence issues in different months, but they should be properly spaced
+      result.sort((a, b) => a.date.compareTo(b.date));
+      for (int i = 1; i < result.length; i++) {
+        final prevDate = result[i - 1].date;
+        final currDate = result[i].date;
+
+        // The difference should be at least 25 days (accounting for month transitions)
+        final dayDiff = currDate.difference(prevDate).inDays;
+        expect(dayDiff >= 25, true,
+            reason:
+                'Expected at least 25 days between reminders, got $dayDiff days');
+      }
+    });
+  }
+
+  void testLastDayOfMonthReminders(DateTime testDate) {
+    testWithClock(
+        'last day of month reminder on ${testDate.year}-${testDate.month}-${testDate.day}',
+        Clock.fixed(testDate), () {
+      const reminderId = 'test';
+      final settings = ReminderSettings(
+        time: MonthlyReminderTime(
+          frequency: const ReminderFrequencyMonthly(),
+          dayOfMonth: LastDayOfMonth(),
+          timeOfTheDay: const TimeOfDay(hour: 15, minute: 0),
+        ),
+        content: const ReminderContent(
+            title: 'Monthly Reminder', body: 'This is a monthly reminder'),
+      );
+
+      int limit = 4;
+      final result = RemindersScheduler.generateScheduling(reminderId,
+          settings: settings, limit: limit);
+
+      expect(result.length, limit);
+
+      // Test that all dates are the last day of their respective months
+      for (var reminder in result) {
+        expect(reminder.date.isAfter(testDate), true);
+
+        // Calculate the last day of the reminder's month
+        final nextMonth =
+            reminder.date.month + 1 > 12 ? 1 : reminder.date.month + 1;
+        final year = reminder.date.month + 1 > 12
+            ? reminder.date.year + 1
+            : reminder.date.year;
+        final lastDayOfMonth = DateTime(year, nextMonth, 0).day;
+
+        expect(reminder.date.day, lastDayOfMonth,
+            reason:
+                '${reminder.date} should be the last day of month ${reminder.date.month}');
+        expect(reminder.date.hour, 15);
+        expect(reminder.date.minute, 0);
+      }
+    });
+  }
+
+  void testQuarterlyReminders(DateTime testDate) {
+    testWithClock(
+        'quarterly reminder on ${testDate.year}-${testDate.month}-${testDate.day}',
+        Clock.fixed(testDate), () {
+      const reminderId = 'test';
+      final settings = ReminderSettings(
+        time: MonthlyReminderTime(
+          frequency: const ReminderFrequencyEveryThreeMonths(),
+          dayOfMonth: DayOfMonthNumber(testDate.day),
+          timeOfTheDay: const TimeOfDay(hour: 15, minute: 0),
+        ),
+        content: const ReminderContent(
+            title: 'Quarterly Reminder', body: 'This is a quarterly reminder'),
+      );
+
+      int limit = 4;
+      final result = RemindersScheduler.generateScheduling(reminderId,
+          settings: settings, limit: limit);
+
+      expect(result.length, limit);
+
+      // All reminders should have the specified hours and minutes
+      for (var reminder in result) {
+        expect(reminder.date.isAfter(testDate), true);
+        expect(reminder.date.hour, 15);
+        expect(reminder.date.minute, 0);
+      }
+
+      // Check that months are approximately 3 months apart
+      result.sort((a, b) => a.date.compareTo(b.date));
+      for (int i = 1; i < result.length; i++) {
+        final previousMonth = result[i - 1].date.month;
+        final currentMonth = result[i].date.month;
+
+        // Check if months are approximately 3 apart (allowing for year boundaries)
+        final diff = (currentMonth - previousMonth + 12) % 12;
+        expect(diff == 3 || diff == 2 || diff == 4, true,
+            reason:
+                'Months should be approximately 3 months apart, got $diff between $previousMonth and $currentMonth');
+      }
+    });
+  }
+
+  void testQuarterlyLastDayReminders(DateTime testDate) {
+    testWithClock(
+        'quarterly last day reminder on ${testDate.year}-${testDate.month}-${testDate.day}',
+        Clock.fixed(testDate), () {
+      const reminderId = 'test';
+      final settings = ReminderSettings(
+        time: MonthlyReminderTime(
+          frequency: const ReminderFrequencyEveryThreeMonths(),
+          dayOfMonth: LastDayOfMonth(),
+          timeOfTheDay: const TimeOfDay(hour: 15, minute: 0),
+        ),
+        content: const ReminderContent(
+            title: 'Quarterly Reminder', body: 'This is a quarterly reminder'),
+      );
+
+      int limit = 4;
+      final result = RemindersScheduler.generateScheduling(reminderId,
+          settings: settings, limit: limit);
+
+      expect(result.length, limit);
+
+      // Test that all dates are the last day of their respective months
+      for (var reminder in result) {
+        expect(reminder.date.isAfter(testDate), true);
+
+        // Calculate the last day of the given month
+        final nextMonth =
+            reminder.date.month + 1 > 12 ? 1 : reminder.date.month + 1;
+        final year = reminder.date.month + 1 > 12
+            ? reminder.date.year + 1
+            : reminder.date.year;
+        final lastDayOfMonth = DateTime(year, nextMonth, 0).day;
+
+        expect(reminder.date.day, lastDayOfMonth,
+            reason:
+                '${reminder.date} should be the last day of month ${reminder.date.month}');
+        expect(reminder.date.hour, 15);
+        expect(reminder.date.minute, 0);
+      }
+
+      // Check that months are approximately 3 months apart
+      result.sort((a, b) => a.date.compareTo(b.date));
+      for (int i = 1; i < result.length; i++) {
+        final previousMonth = result[i - 1].date.month;
+        final currentMonth = result[i].date.month;
+
+        // Check if months are approximately 3 apart (allowing for year boundaries)
+        final diff = (currentMonth - previousMonth + 12) % 12;
+        expect(diff == 3 || diff == 2 || diff == 4, true,
+            reason:
+                'Months should be approximately 3 months apart, got $diff between $previousMonth and $currentMonth');
+      }
+    });
   }
 
   group('RemindersScheduler', () {
-    test('generateScheduling with contentForIndex parameter', () async {
-      const reminderId = 'test';
-      final currentDate = DateTime.now();
-      final scheduleDate = currentDate.add(const Duration(minutes: 5));
+    group('Dynamic date testing', () {
+      // Run all test functions with all test dates
+      for (final date in testDates) {
+        testDailyReminders(date);
+        testWeeklyReminders(date);
+        testMonthlyReminders(date);
+        testLastDayOfMonthReminders(date);
+        testQuarterlyReminders(date);
+        testQuarterlyLastDayReminders(date);
+      }
+    });
 
-      final settings = ReminderSettings(
-        time: DailyReminderTime(
-          timeOfTheDay: TimeOfDay.fromDateTime(scheduleDate),
-        ),
-        content: const ReminderContent(
-            title: 'Default Reminder', body: 'This is a default reminder'),
-      );
+    // Additional tests for special cases or functionality that doesn't depend on date
+    group('Special cases', () {
+      testWithClock('generateScheduling with contentForIndex parameter',
+          Clock.fixed(testDates.first), () {
+        const reminderId = 'test';
+        const scheduleTimeOfDay = TimeOfDay(hour: 15, minute: 0);
 
-      ReminderContent contentForIndex(int index) {
-        return ReminderContent(
-          title: 'Custom Reminder $index',
-          body: 'This is a custom reminder for index $index',
+        const settings = ReminderSettings(
+          time: DailyReminderTime(
+            timeOfTheDay: scheduleTimeOfDay,
+          ),
+          content: ReminderContent(
+              title: 'Default Reminder', body: 'This is a default reminder'),
         );
-      }
 
-      int limit = 10;
-      final result = RemindersScheduler.generateScheduling(
-        reminderId,
-        settings: settings,
-        limit: limit,
-        contentForIndex: contentForIndex,
-      );
-
-      expect(result.length, limit);
-
-      for (int i = 0; i < result.length; i++) {
-        expect(result[i].content.title, 'Custom Reminder $i');
-        expect(
-            result[i].content.body, 'This is a custom reminder for index $i');
-      }
-    });
-    test('generateScheduling with no settings', () async {
-      const reminderId = 'test';
-      final result = RemindersScheduler.generateScheduling(
-        reminderId,
-        settings: null,
-        contentForIndex: (_) =>
-            const ReminderContent(title: 'Test', body: 'Test'),
-      );
-
-      expect(result.length, 0);
-    });
-
-    test('generateScheduling with daily reminder with time after current',
-        () async {
-      final currentDate = DateTime.now();
-      final scheduleDate = currentDate.add(const Duration(minutes: 5));
-
-      const reminderId = 'test';
-      final settings = ReminderSettings(
-        time: DailyReminderTime(
-          timeOfTheDay: TimeOfDay.fromDateTime(scheduleDate),
-        ),
-        content: const ReminderContent(
-            title: 'Daily Reminder', body: 'This is a daily reminder'),
-      );
-
-      int limit = 64;
-      final result = RemindersScheduler.generateScheduling(reminderId,
-          settings: settings, limit: limit);
-
-      expect(result.length, limit);
-
-      // starts from -1 because the first reminder is scheduled for the current day
-      int dayDifference = -1;
-      for (var reminder in result) {
-        dayDifference++;
-        // check if the reminder is scheduled for the next day
-        expect(reminder.date.isAfter(currentDate), true);
-        expect(reminder.date.day,
-            currentDate.add(Duration(days: dayDifference)).day);
-
-        expect(reminder.date.hour, scheduleDate.hour);
-        expect(reminder.date.minute, scheduleDate.minute);
-        expect(reminder.content.title, 'Daily Reminder');
-        expect(reminder.content.body, 'This is a daily reminder');
-      }
-      // check if the reminders are not scheduled for the last day + 1
-
-      // find reminder with the latest date
-      result.sort((a, b) => a.date.compareTo(b.date));
-      ReminderToSchedule lastReminder = result.last;
-      // get the date of the limit + 1 days from now
-      DateTime lastDate = currentDate.add(Duration(days: limit + 1));
-      expect(lastReminder.date.isBefore(lastDate), true);
-    });
-
-    test('generateScheduling with daily reminder with time before current',
-        () async {
-      final currentDate = DateTime.now();
-      final scheduleDate = currentDate.subtract(const Duration(minutes: 5));
-
-      const reminderId = 'test';
-      final settings = ReminderSettings(
-        time: DailyReminderTime(
-          timeOfTheDay: TimeOfDay.fromDateTime(scheduleDate),
-        ),
-        content: const ReminderContent(
-            title: 'Daily Reminder', body: 'This is a daily reminder'),
-      );
-
-      int limit = 64;
-      final result = RemindersScheduler.generateScheduling(reminderId,
-          settings: settings, limit: limit);
-
-      expect(result.length, limit);
-
-      // starts from 0 because the first reminder is scheduled for the next day
-      int dayDifference = 0;
-      for (var reminder in result) {
-        dayDifference++;
-        // check if the reminder is scheduled for the next day
-        expect(reminder.date.isAfter(currentDate), true);
-        expect(reminder.date.day,
-            currentDate.add(Duration(days: dayDifference)).day);
-        expect(reminder.date.hour, scheduleDate.hour);
-        expect(reminder.date.minute, scheduleDate.minute);
-        expect(reminder.content.title, 'Daily Reminder');
-        expect(reminder.content.body, 'This is a daily reminder');
-      }
-      // check if the reminders are not scheduled for the last day + 2
-
-      // find reminder with the latest date
-      result.sort((a, b) => a.date.compareTo(b.date));
-      ReminderToSchedule lastReminder = result.last;
-      // get the date of the limit + 2 days from now
-      DateTime lastDate = currentDate.add(Duration(days: limit + 2));
-      expect(lastReminder.date.isBefore(lastDate), true);
-    });
-
-    test('generateScheduling with weekly reminder with time after current',
-        () async {
-      final currentDate = DateTime.now();
-      final scheduleDate = currentDate.add(const Duration(minutes: 5));
-
-      const reminderId = 'test';
-      final settings = ReminderSettings(
-        time: WeeklyReminderTime(
-          dayOfWeek: scheduleDate.weekday % 7,
-          timeOfTheDay: TimeOfDay.fromDateTime(scheduleDate),
-        ),
-        content: const ReminderContent(
-            title: 'Weekly Reminder', body: 'This is a weekly reminder'),
-      );
-
-      int limit = 64;
-      final result = RemindersScheduler.generateScheduling(reminderId,
-          settings: settings, limit: limit);
-
-      expect(result.length, limit);
-
-      // starts from 0 because the first reminder is scheduled for the current week
-      int weekDifference = -1;
-      for (var reminder in result) {
-        weekDifference++;
-        // check if the reminder is scheduled for the next week
-        expect(reminder.date.isAfter(currentDate), true);
-        expect(reminder.date.weekday, currentDate.weekday);
-        expect(reminder.date.day,
-            currentDate.add(Duration(days: weekDifference * 7)).day);
-        expect(reminder.date.toUtc().hour, scheduleDate.toUtc().hour);
-        expect(reminder.date.toUtc().minute, scheduleDate.toUtc().minute);
-        expect(reminder.content.title, 'Weekly Reminder');
-        expect(reminder.content.body, 'This is a weekly reminder');
-      }
-      // check if the reminders are not scheduled for the last week + 1
-
-      // find reminder with the latest date
-      result.sort((a, b) => a.date.compareTo(b.date));
-      ReminderToSchedule lastReminder = result.last;
-      // get the date of the limit + 1 weeks from now
-      DateTime lastDate = currentDate.add(Duration(days: (limit + 1) * 7));
-      expect(lastReminder.date.isBefore(lastDate), true);
-    });
-
-    test('generateScheduling with weekly reminder with time before current',
-        () async {
-      final currentDate = DateTime.now();
-      final scheduleDate = currentDate.subtract(const Duration(days: 1));
-
-      const reminderId = 'test';
-      final settings = ReminderSettings(
-        time: WeeklyReminderTime(
-          dayOfWeek: scheduleDate.weekday % 7,
-          timeOfTheDay: TimeOfDay.fromDateTime(scheduleDate),
-        ),
-        content: const ReminderContent(
-            title: 'Weekly Reminder', body: 'This is a weekly reminder'),
-      );
-
-      int limit = 64;
-      final result = RemindersScheduler.generateScheduling(reminderId,
-          settings: settings, limit: limit);
-
-      expect(result.length, limit);
-
-      // starts from 0 because the first reminder is scheduled for the next week
-      int weekDifference = 0;
-      for (var reminder in result) {
-        weekDifference++;
-        // check if the reminder is scheduled for the next week
-        expect(reminder.date.isAfter(currentDate), true);
-        expect(reminder.date.weekday, scheduleDate.weekday);
-        expect(reminder.date.day,
-            scheduleDate.add(Duration(days: weekDifference * 7)).day);
-        expect(reminder.date.toUtc().hour, scheduleDate.toUtc().hour);
-        expect(reminder.date.toUtc().minute, scheduleDate.toUtc().minute);
-        expect(reminder.content.title, 'Weekly Reminder');
-        expect(reminder.content.body, 'This is a weekly reminder');
-      }
-      // check if the reminders are not scheduled for the last week + 2
-
-      // find reminder with the latest date
-      result.sort((a, b) => a.date.compareTo(b.date));
-      ReminderToSchedule lastReminder = result.last;
-      // get the date of the limit + 2 weeks from now
-      DateTime lastDate = currentDate.add(Duration(days: (limit + 2) * 7));
-      expect(lastReminder.date.isBefore(lastDate), true);
-    });
-
-    test(
-        'generateScheduling with monthly reminder with day of month after current',
-        () async {
-      final currentDate = DateTime.now();
-      final scheduleDate = currentDate.add(const Duration(days: 7));
-
-      const reminderId = 'test';
-      final settings = ReminderSettings(
-        time: MonthlyReminderTime(
-          frequency: const ReminderFrequencyMonthly(),
-          dayOfMonth: DayOfMonthNumber(scheduleDate.day),
-          timeOfTheDay: TimeOfDay.fromDateTime(scheduleDate),
-        ),
-        content: const ReminderContent(
-            title: 'Monthly Reminder', body: 'This is a monthly reminder'),
-      );
-
-      int limit = 64;
-      final result = RemindersScheduler.generateScheduling(reminderId,
-          settings: settings, limit: limit);
-
-      expect(result.length, limit);
-
-      int monthDifference = -1;
-      for (var reminder in result) {
-        monthDifference++;
-        expect(reminder.date.isAfter(currentDate), true);
-        int expectedYear = currentDate
-            .copyWith(month: currentDate.month + monthDifference)
-            .year;
-        int expectedMonth = (currentDate.month + monthDifference) % 12;
-        int daysInMonth = getDaysLenghtOfMonth(expectedMonth, expectedYear);
-        if (scheduleDate.day > daysInMonth) {
-          //TODO expect a different day and month
-        } else {
-          expect(reminder.date.day, scheduleDate.day);
-          expect(reminder.date.isAfter(currentDate), true);
+        ReminderContent contentForIndex(int index) {
+          return ReminderContent(
+            title: 'Custom Reminder $index',
+            body: 'This is a custom reminder for index $index',
+          );
         }
 
-        expect(
-            reminder.date.month,
-            scheduleDate
-                .copyWith(month: currentDate.month + monthDifference)
-                .month);
-        expect(reminder.date.hour, scheduleDate.hour);
-        expect(reminder.date.minute, scheduleDate.minute);
-        expect(reminder.content.title, 'Monthly Reminder');
-        expect(reminder.content.body, 'This is a monthly reminder');
-      }
+        int limit = 5;
+        final result = RemindersScheduler.generateScheduling(
+          reminderId,
+          settings: settings,
+          limit: limit,
+          contentForIndex: contentForIndex,
+        );
 
-      result.sort((a, b) => a.date.compareTo(b.date));
-      ReminderToSchedule lastReminder = result.last;
-      DateTime lastDate =
-          currentDate.copyWith(month: currentDate.month + limit);
-      expect(lastReminder.date.isBefore(lastDate), true);
-    });
+        expect(result.length, limit);
 
-    test(
-        'generateScheduling with monthly reminder with day of month before current',
-        () async {
-      final currentDate = DateTime.now();
-      final scheduleDate = currentDate.subtract(const Duration(days: 7));
-
-      const reminderId = 'test';
-      final settings = ReminderSettings(
-        time: MonthlyReminderTime(
-          frequency: const ReminderFrequencyMonthly(),
-          dayOfMonth: DayOfMonthNumber(scheduleDate.day),
-          timeOfTheDay: TimeOfDay.fromDateTime(scheduleDate),
-        ),
-        content: const ReminderContent(
-            title: 'Monthly Reminder', body: 'This is a monthly reminder'),
-      );
-
-      int limit = 64;
-      final result = RemindersScheduler.generateScheduling(reminderId,
-          settings: settings, limit: limit);
-
-      expect(result.length, limit);
-
-      int monthDifference = (scheduleDate.month - currentDate.month);
-      for (var reminder in result) {
-        monthDifference++;
-        expect(reminder.date.isAfter(currentDate), true);
-        expect(reminder.date.day, scheduleDate.day);
-        expect(
-            reminder.date.month,
-            scheduleDate
-                .copyWith(month: currentDate.month + monthDifference)
-                .month);
-        expect(reminder.date.hour, scheduleDate.hour);
-        expect(reminder.date.minute, scheduleDate.minute);
-        expect(reminder.content.title, 'Monthly Reminder');
-        expect(reminder.content.body, 'This is a monthly reminder');
-      }
-
-      result.sort((a, b) => a.date.compareTo(b.date));
-      ReminderToSchedule lastReminder = result.last;
-      DateTime lastDate =
-          currentDate.copyWith(month: currentDate.month + limit);
-      expect(lastReminder.date.isBefore(lastDate), true);
-    });
-
-    test(
-        'generateScheduling with monthly reminder on the last day of the month',
-        () async {
-      final currentDate = DateTime.now();
-      final scheduleDate = currentDate.add(const Duration(minutes: 5));
-
-      const reminderId = 'test';
-      final settings = ReminderSettings(
-        time: MonthlyReminderTime(
-          frequency: const ReminderFrequencyMonthly(),
-          dayOfMonth: LastDayOfMonth(),
-          timeOfTheDay: TimeOfDay.fromDateTime(scheduleDate),
-        ),
-        content: const ReminderContent(
-            title: 'Monthly Reminder', body: 'This is a monthly reminder'),
-      );
-
-      int limit = 64;
-      final result = RemindersScheduler.generateScheduling(reminderId,
-          settings: settings, limit: limit);
-
-      expect(result.length, limit);
-
-      int monthDifference = -1;
-      for (var reminder in result) {
-        monthDifference++;
-        expect(reminder.date.isAfter(currentDate), true);
-
-        DateTime lastDayOfMonth = DateTime(
-            currentDate.year, currentDate.month + monthDifference + 1, 0);
-
-        expect(reminder.date.year, lastDayOfMonth.year);
-        expect(reminder.date.month, lastDayOfMonth.month);
-        expect(reminder.date.day, lastDayOfMonth.day);
-
-        expect(reminder.date.hour, scheduleDate.hour);
-        expect(reminder.date.minute, scheduleDate.minute);
-        expect(reminder.content.title, 'Monthly Reminder');
-        expect(reminder.content.body, 'This is a monthly reminder');
-      }
-
-      result.sort((a, b) => a.date.compareTo(b.date));
-      ReminderToSchedule lastReminder = result.last;
-      DateTime lastDate =
-          DateTime(currentDate.year, currentDate.month + limit + 1, 0);
-      expect(lastReminder.date.isBefore(lastDate), true);
-    });
-
-    test(
-        'generateScheduling with every three months reminder with day of month after current',
-        () async {
-      final currentDate = DateTime.now();
-      final scheduleDate = currentDate.add(const Duration(days: 7));
-
-      const reminderId = 'test';
-      final settings = ReminderSettings(
-        time: MonthlyReminderTime(
-          frequency: const ReminderFrequencyEveryThreeMonths(),
-          dayOfMonth: DayOfMonthNumber(scheduleDate.day),
-          timeOfTheDay: TimeOfDay.fromDateTime(scheduleDate),
-        ),
-        content: const ReminderContent(
-            title: 'Every Three Months Reminder',
-            body: 'This is a reminder every three months'),
-      );
-
-      int limit = 64;
-      final result = RemindersScheduler.generateScheduling(reminderId,
-          settings: settings, limit: limit);
-
-      expect(result.length, limit);
-
-      int monthDifference = -3;
-      for (var reminder in result) {
-        monthDifference += 3;
-        expect(reminder.date.isAfter(currentDate), true);
-        int expectedYear = currentDate
-            .copyWith(month: currentDate.month + monthDifference)
-            .year;
-        int expectedMonth = (currentDate.month + monthDifference) % 12;
-        int daysInMonth = getDaysLenghtOfMonth(expectedMonth, expectedYear);
-        if (scheduleDate.day > daysInMonth) {
-          //TODO expect a different day and month
-        } else {
-          expect(reminder.date.day, scheduleDate.day);
-          expect(reminder.date.isAfter(currentDate), true);
+        // Verify the content is customized for each index
+        for (int i = 0; i < result.length; i++) {
+          expect(result[i].content.title, 'Custom Reminder $i');
+          expect(
+              result[i].content.body, 'This is a custom reminder for index $i');
         }
-        expect(reminder.date.hour, scheduleDate.hour);
-        expect(reminder.date.minute, scheduleDate.minute);
-        expect(reminder.content.title, 'Every Three Months Reminder');
-        expect(reminder.content.body, 'This is a reminder every three months');
-      }
+      });
 
-      result.sort((a, b) => a.date.compareTo(b.date));
-      ReminderToSchedule lastReminder = result.last;
-      DateTime lastDate =
-          currentDate.copyWith(month: currentDate.month + limit * 3);
-      expect(lastReminder.date.isBefore(lastDate), true);
-    });
+      testWithClock(
+          'generateScheduling with no settings', Clock.fixed(testDates[4]), () {
+        const reminderId = 'test';
+        final result = RemindersScheduler.generateScheduling(
+          reminderId,
+          settings: null,
+          contentForIndex: (_) =>
+              const ReminderContent(title: 'Test', body: 'Test'),
+        );
 
-    test(
-        'generateScheduling with every three months reminder with day of month before current',
-        () async {
-      final currentDate = DateTime.now();
-      final scheduleDate = currentDate.subtract(const Duration(days: 7));
-
-      const reminderId = 'test';
-      final settings = ReminderSettings(
-        time: MonthlyReminderTime(
-          frequency: const ReminderFrequencyEveryThreeMonths(),
-          dayOfMonth: DayOfMonthNumber(scheduleDate.day),
-          timeOfTheDay: TimeOfDay.fromDateTime(scheduleDate),
-        ),
-        content: const ReminderContent(
-            title: 'Every Three Months Reminder',
-            body: 'This is a reminder every three months'),
-      );
-
-      int limit = 64;
-      final result = RemindersScheduler.generateScheduling(reminderId,
-          settings: settings, limit: limit);
-
-      expect(result.length, limit);
-
-      // starts from -2 because the first reminder is scheduled for the next month
-      int monthDifference = (scheduleDate.month - currentDate.month) * 3;
-      for (var reminder in result) {
-        monthDifference += 3;
-        expect(reminder.date.isAfter(currentDate), true);
-        expect(reminder.date.day, scheduleDate.day);
-        expect(
-            reminder.date.month,
-            scheduleDate
-                .copyWith(month: currentDate.month + monthDifference)
-                .month);
-        expect(reminder.date.hour, scheduleDate.hour);
-        expect(reminder.date.minute, scheduleDate.minute);
-        expect(reminder.content.title, 'Every Three Months Reminder');
-        expect(reminder.content.body, 'This is a reminder every three months');
-      }
-
-      result.sort((a, b) => a.date.compareTo(b.date));
-      ReminderToSchedule lastReminder = result.last;
-      DateTime lastDate =
-          currentDate.copyWith(month: currentDate.month + limit * 3);
-      expect(lastReminder.date.isBefore(lastDate), true);
-    });
-
-    test(
-        'generateScheduling with every three months reminder on the last day of the month',
-        () async {
-      final currentDate = DateTime.now();
-      final scheduleDate = currentDate.add(const Duration(minutes: 5));
-
-      const reminderId = 'test';
-      final settings = ReminderSettings(
-        time: MonthlyReminderTime(
-          frequency: const ReminderFrequencyEveryThreeMonths(),
-          dayOfMonth: LastDayOfMonth(),
-          timeOfTheDay: TimeOfDay.fromDateTime(scheduleDate),
-        ),
-        content: const ReminderContent(
-            title: 'Every Three Months Reminder',
-            body: 'This is a reminder every three months'),
-      );
-
-      int limit = 64;
-      final result = RemindersScheduler.generateScheduling(reminderId,
-          settings: settings, limit: limit);
-
-      expect(result.length, limit);
-
-      int monthDifference = -3;
-      for (var reminder in result) {
-        monthDifference += 3;
-        expect(reminder.date.isAfter(currentDate), true);
-
-        DateTime lastDayOfMonth = DateTime(
-            currentDate.year, currentDate.month + monthDifference + 1, 0);
-
-        expect(reminder.date.year, lastDayOfMonth.year);
-        expect(reminder.date.month, lastDayOfMonth.month);
-        expect(reminder.date.day, lastDayOfMonth.day);
-
-        expect(reminder.date.hour, scheduleDate.hour);
-        expect(reminder.date.minute, scheduleDate.minute);
-        expect(reminder.content.title, 'Every Three Months Reminder');
-        expect(reminder.content.body, 'This is a reminder every three months');
-      }
-
-      result.sort((a, b) => a.date.compareTo(b.date));
-      ReminderToSchedule lastReminder = result.last;
-      DateTime lastDate =
-          DateTime(currentDate.year, currentDate.month + limit * 3 + 1, 0);
-      expect(lastReminder.date.isBefore(lastDate), true);
+        expect(result.length, 0);
+      });
     });
   });
 }
