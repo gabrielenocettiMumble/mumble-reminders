@@ -25,7 +25,11 @@ class NotificationPlugin {
         AndroidInitializationSettings(defaultDrawableIcon);
 
     const DarwinInitializationSettings initializationSettingsDarwin =
-        DarwinInitializationSettings();
+        DarwinInitializationSettings(
+      requestSoundPermission: false,
+      requestBadgePermission: false,
+      requestAlertPermission: false,
+    );
 
     InitializationSettings initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
