@@ -10,6 +10,7 @@ import 'package:mumble_reminders/model/reminder_settings/reminder_time/types/wee
 import 'package:mumble_reminders/model/reminder_to_schedule.dart';
 import 'package:mumble_reminders/utilities/reminders_scheduler.dart';
 
+//TODO do these test by overriding the dateTIme now and test it on multiple dates
 void main() {
   int getDaysLenghtOfMonth(int month, int year) {
     return DateTime(year, month + 1, 0).day;
@@ -20,7 +21,7 @@ void main() {
       const reminderId = 'test';
       final currentDate = DateTime.now();
       final scheduleDate = currentDate.add(const Duration(minutes: 5));
-      
+
       final settings = ReminderSettings(
         time: DailyReminderTime(
           timeOfTheDay: TimeOfDay.fromDateTime(scheduleDate),
@@ -48,7 +49,8 @@ void main() {
 
       for (int i = 0; i < result.length; i++) {
         expect(result[i].content.title, 'Custom Reminder $i');
-        expect(result[i].content.body, 'This is a custom reminder for index $i');
+        expect(
+            result[i].content.body, 'This is a custom reminder for index $i');
       }
     });
     test('generateScheduling with no settings', () async {
@@ -56,7 +58,8 @@ void main() {
       final result = RemindersScheduler.generateScheduling(
         reminderId,
         settings: null,
-        contentForIndex: (_) => const ReminderContent(title: 'Test', body: 'Test'),
+        contentForIndex: (_) =>
+            const ReminderContent(title: 'Test', body: 'Test'),
       );
 
       expect(result.length, 0);

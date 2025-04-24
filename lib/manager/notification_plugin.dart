@@ -1,36 +1,26 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:mumble_reminders/database/reminders_db_manager.dart';
 import 'package:mumble_reminders/model/reminder_manager_options.dart';
 import 'package:mumble_reminders/model/reminder_to_schedule.dart';
-import 'package:mumble_reminders/utilities/reminders_scheduler.dart';
 import 'package:mumble_reminders/utilities/reminders_shared_prefrences_utility.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 
-/// Notification utility used to interact with the local notifications plugin
-class LocalNotificationUtility {
-  //TODO remember to call this function in the main
-  static void initializeTimeZones() => tz.initializeTimeZones();
+class NotificationPlugin {
+  FlutterLocalNotificationsPlugin? _plugin;
+  FlutterLocalNotificationsPlugin? get plugin => _plugin;
+  String defaultDrawableIcon;
+  Function(String)? onReceiveNotification;
 
-  static FlutterLocalNotificationsPlugin? _flutterLocalNotificationsPlugin;
-
-  static Future<FlutterLocalNotificationsPlugin> notificationsPlugin({
-    String defaultDrawableIcon = '@drawable/ic_notification',
-    required Function(String)? openNotification,
-  }) async {
-    if (_flutterLocalNotificationsPlugin != null) {
-      return _flutterLocalNotificationsPlugin!;
-    }
-    await _initNotificationsPlugin(defaultDrawableIcon, openNotification!);
-    return _flutterLocalNotificationsPlugin!;
+  NotificationPlugin({
+    this.defaultDrawableIcon = '@drawable/ic_notification',
+    required this.onReceiveNotification,
+  }) {
+    tz.initializeTimeZones();
   }
 
-  static Future<void> _initNotificationsPlugin(
-    String defaultDrawableIcon,
-    Function(String) onReceiveNotification,
-  ) async {
+  Future<void> init() async {
     AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings(defaultDrawableIcon);
 
@@ -47,17 +37,19 @@ class LocalNotificationUtility {
     await plugin.initialize(
       initializationSettings,
       onDidReceiveNotificationResponse: (response) {
-        if (response.payload != null) onReceiveNotification(response.payload!);
+        if (response.payload != null && onReceiveNotification != null) {
+          onReceiveNotification!(response.payload!);
+        }
       },
     );
 
-    _flutterLocalNotificationsPlugin = plugin;
+    _plugin = plugin;
   }
 
   /// throws [NotificationPermissionDeniedException] if the user denies the permission
   ///
   /// throws [ScheduleExactAlarmPermissionDeniedException] if the user denies the permission to schedule exact alarms (Android only)
-  static Future<bool> askPermissions() async {
+  Future<bool> askPermissions() async {
     if (Platform.isAndroid) {
       final androidPlugin = FlutterLocalNotificationsPlugin()
           .resolvePlatformSpecificImplementation<
@@ -68,6 +60,7 @@ class LocalNotificationUtility {
       if (!permission) throw NotificationPermissionDeniedException();
       bool exactAlarmPermission = true;
       if (await androidPlugin.canScheduleExactNotifications() != true) {
+        //TODO add chance to set or disable the exact alarm permission
         exactAlarmPermission =
             await androidPlugin.requestExactAlarmsPermission() ?? false;
         if (!exactAlarmPermission) {
@@ -96,37 +89,7 @@ class LocalNotificationUtility {
     }
   }
 
-  static Future<List<ReminderToSchedule>> scheduledRemindersToUpdate(
-      List<String> allReminderIDs) async {
-    List<ReminderToSchedule> reminders = [];
-
-    List<String> reminderIds = await RemindersDbManager.getIds();
-
-    for (String reminderId in allReminderIDs) {
-      reminderIds = reminderIds..remove(reminderId);
-      reminders.addAll(
-        RemindersScheduler.generateScheduling(
-          reminderId,
-          settings: await RemindersDbManager.settingsForReminderID(reminderId),
-        ),
-      );
-    }
-
-    for (String id in reminderIds) {
-      reminders.addAll(
-        RemindersScheduler.generateScheduling(
-          id,
-          settings: await RemindersDbManager.settingsForReminderID(id),
-        ),
-      );
-    }
-    reminders.sort((r1, r2) => r1.date.compareTo(r2.date));
-
-    return reminders;
-  }
-
-  static Future<void> scheduleNotification(
-    FlutterLocalNotificationsPlugin notificationsPlugin,
+  Future<void> scheduleNotification(
     ReminderToSchedule reminder, {
     required ReminderManagerOptions options,
   }) async {
@@ -134,7 +97,7 @@ class LocalNotificationUtility {
       return;
     }
 
-    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+    final androidPlatformChannelSpecifics = AndroidNotificationDetails(
       options.androidOptions.androidChannelId,
       options.androidOptions.androidChannelName,
       channelDescription: options.androidOptions.androidChannelDescription,
@@ -143,7 +106,7 @@ class LocalNotificationUtility {
       importance: Importance.max,
       priority: Priority.max,
     );
-    var iOSPlatformChannelSpecifics = const DarwinNotificationDetails(
+    const iOSPlatformChannelSpecifics = DarwinNotificationDetails(
       presentAlert: true,
       presentSound: true,
       presentBadge: true,
@@ -166,7 +129,7 @@ class LocalNotificationUtility {
     int uinqueId = reminderId.hashCode ^
         DateTime.now().millisecondsSinceEpoch.toString().hashCode;
 
-    await notificationsPlugin.zonedSchedule(
+    await _plugin?.zonedSchedule(
       uinqueId,
       reminderTitle,
       reminderDescription,
@@ -178,6 +141,8 @@ class LocalNotificationUtility {
       payload: json.encode(notificationPayload),
     );
   }
+
+  Future<void> cancelAll() => _plugin?.cancelAll() ?? Future.value();
 }
 
 class NotificationPermissionException implements Exception {}
